@@ -1,0 +1,190 @@
+//---------------------------------------------------------------------------
+#include <vcl.h>
+#pragma hdrstop
+
+#include "Unit1.h"
+#include <iostream>
+#include <string>
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TSzachy *Szachy;
+//---------------------------------------------------------------------------
+
+class krolowa{
+	public:
+	  krolowa(int x, int y);
+	  int col_, row_;
+	  //bool ruchCzyMozliwy(int xL, int yL, int xP, int yP);
+	private:
+};
+
+krolowa::krolowa(int x, int y){
+  col_ = x;;
+  row_ = y;;
+}
+
+//algorytm poruszania krolowej
+bool ruchCzyMozliwyKrolowa(int ColL, int RowL, int ColP, int RowP){
+
+  for (int i = 1; i < 8; i++){
+	if ((ColL == ColP) && (RowL = RowP + i)){
+		return true;
+	}
+	if ((ColL == ColP) && (RowL = RowP - i)){
+		return true;
+	}
+  }
+
+  for (int i = 1; i < 8; i++){
+	if((RowL == RowP) && (ColL == ColP + i)){
+		return true;
+	  }
+
+    if ((RowL == RowP) && (ColL == ColP - i)){
+		return true;
+	  }
+  }
+
+  for (int i = 1; i < 8; i++){
+	if (ColL == (ColP - i)){
+	  if (RowL == (RowP - i)){
+		return true;
+	  }
+	  if (RowL == (RowP + i)){
+		return true;
+	  }
+	}
+
+	if(ColL == (ColP + i)){
+	  if (RowL ==(RowP - i)){
+		return true;
+	  }
+	  if (RowL ==(RowP + i)){
+        return true;
+	  }
+	}
+  }
+
+
+  return false;
+}
+
+__fastcall TSzachy::TSzachy(TComponent* Owner)
+	: TForm(Owner)
+{
+}
+
+
+void __fastcall TSzachy::rozmieszczeniePionkowPocz(TStringGrid& tabelka){
+  tab[4][0] = {5, 0, 1, "K"};
+  tab[3][7] = {4, 7, 2, "K"};
+
+  tabelka.Cells[5][0] = tab[4][0].nazwa;
+  tabelka.Cells[4][7] = tab[4][0].nazwa;
+}
+
+//---------------------------------------------------------------------------
+//poczatkowe rysowanie planszy, parametry itp.
+void __fastcall TSzachy::narysuj(TObject *Sender)
+{
+  rozmieszczeniePionkowPocz(*szachownica);
+
+  szachownica -> ColCount = 9;
+  szachownica -> RowCount = 9;
+
+  for (int i = 1; i < 9; i++){
+	szachownica -> ColWidths[i] = 60;
+  }
+
+  szachownica -> DefaultRowHeight = 60;
+  szachownica -> RowHeights[8] = 20;
+  szachownica -> ColWidths[0] = 20;
+
+  int counter = 8;
+  for (int i = 0; i < 8; i++){
+	szachownica -> Cells[0][i] = counter;
+	counter--;
+  }
+
+  szachownica -> Cells[1][8] = "A";
+  szachownica -> Cells[2][8] = "B";
+  szachownica -> Cells[3][8] = "C";
+  szachownica -> Cells[4][8] = "D";
+  szachownica -> Cells[5][8] = "E";
+  szachownica -> Cells[6][8] = "F";
+  szachownica -> Cells[7][8] = "G";
+  szachownica -> Cells[8][8] = "H";
+}
+//---------------------------------------------------------------------------
+void __fastcall TSzachy::koloruj(TObject *Sender, int ACol, int ARow, TRect &Rect,
+          TGridDrawState State)
+{
+  szachownica -> Canvas -> Brush -> Color = clBlack;
+
+  for (int j = 0; j < 8; j = j + 2){
+	for (int i = 2; i < 9; i = i + 2){
+	  if ((ACol == i) && (ARow == j)){
+		szachownica -> Canvas -> FillRect(Rect);
+	  }
+	}
+  }
+
+  for (int j = 1; j < 8; j = j + 2){
+	for (int i = 1; i < 9; i = i + 2){
+	  if ((ACol == i) && (ARow == j)){
+		szachownica -> Canvas -> FillRect(Rect);
+	  }
+	}
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TSzachy::Button1Click(TObject *Sender)
+{
+  Szachy -> Close();
+}
+//---------------------------------------------------------------------------
+
+std::string __fastcall TSzachy::wybranyPionek(TStringGrid& tabelka, int col, int row){
+  if ( tabelka.Cells[col][row] == "K"){
+	return "K";
+  }
+  return "";
+}
+
+bool __fastcall TSzachy::czyWybranoPionka(TStringGrid& tabelka, int col, int row){
+  if (tabelka.Cells[col][row] != ""){
+	return true;
+  }
+  return false;
+}
+
+void __fastcall TSzachy::poruszanie(TObject *Sender, int ACol, int ARow, bool &CanSelect)
+{
+  if (szachownica -> Cells[ACol][ARow] == ""){
+	if (czyWybranoPionka(*szachownica, lastCol, lastRow) == false){
+	  ShowMessage("Wybierz najpier pionka");
+	}
+	else if(czyWybranoPionka(*szachownica, lastCol, lastRow) == true){
+	  if (wybranyPionek(*szachownica, lastCol, lastRow) == "K"){
+	  ShowMessage("Ruch krolowa mozliwy");
+		if (ruchCzyMozliwyKrolowa(lastCol, lastRow, ACol, ARow) == true){
+		  szachownica -> Cells[ACol][ARow] = szachownica -> Cells[lastCol][lastRow];
+		  szachownica -> Cells[lastCol][lastRow] = "";
+		}
+	  }
+	}
+  }
+  else if (szachownica -> Cells[ACol][ARow] != ""){
+	if (czyWybranoPionka(*szachownica, lastCol, lastRow) == false){
+	  lastCol = ACol;
+	  lastRow = ARow;
+	}
+	else if (czyWybranoPionka(*szachownica, ACol, ARow) == true){
+      ShowMessage("zbijanie?");
+	}
+  }
+}
+//---------------------------------------------------------------------------

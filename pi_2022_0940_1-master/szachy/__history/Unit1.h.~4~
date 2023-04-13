@@ -1,0 +1,40 @@
+//---------------------------------------------------------------------------
+
+#ifndef Unit1H
+#define Unit1H
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.Grids.hpp>
+//---------------------------------------------------------------------------
+class TSzachy : public TForm
+{
+__published:	// IDE-managed Components
+	TStringGrid *szachownica;
+	TButton *Zamknij;
+	void __fastcall narysuj(TObject *Sender);
+	void __fastcall koloruj(TObject *Sender, int ACol, int ARow, TRect &Rect, TGridDrawState State);
+	void __fastcall Button1Click(TObject *Sender);
+	void __fastcall poruszanie(TObject *Sender, int ACol, int ARow, bool &CanSelect);
+	std::string __fastcall wybranyPionek(TStringGrid& tabelka, int col, int row);
+	bool __fastcall czyWybranoPionka(TStringGrid& tabelka, int col, int row);
+
+private:	// User declarations
+   int tab [8][8];   // tablica z rozmieszczeniem pionkow na planszy
+   int lastCol = 4;
+   int lastRow = 4;
+
+   struct pionki{
+	   int col, row;
+       std::string nazwa;
+   };
+
+public:		// User declarations
+	__fastcall TSzachy(TComponent* Owner);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TSzachy *Szachy;
+//---------------------------------------------------------------------------
+#endif
